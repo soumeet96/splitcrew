@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ===== SEO tags for splitcrew.in ===== -->
+<title>SplitCrew — Split Bills & Track Expenses With Friends</title>
+<meta name="description" content="Split bills and track shared expenses with your crew — no signup, no app download. Create a crew, log what everyone spent on your outing, and SplitCrew works out who owes who. A free, simple Splitwise alternative.">
+<link rel="canonical" href="https://splitcrew.in/">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#231942">
+
+<!-- Open Graph (link previews on WhatsApp, iMessage, Slack, etc.) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="SplitCrew — Split Bills & Track Expenses With Friends">
+<meta property="og:description" content="No signup. Just create a crew, log the spends from your outing, and SplitCrew works out who owes who.">
+<meta property="og:url" content="https://splitcrew.in/">
+<meta property="og:image" content="https://splitcrew.in/og-image.png">
+<meta property="og:site_name" content="SplitCrew">
+
+<!-- Twitter/X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SplitCrew — Split Bills & Track Expenses With Friends">
+<meta name="twitter:description" content="No signup. Create a crew, log the spends, SplitCrew works out who owes who.">
+<meta name="twitter:image" content="https://splitcrew.in/og-image.png">
+
+<!-- Favicon: inline SVG so no separate image file is required to go live -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='6' width='26' height='20' rx='4' fill='%23FFF7EC' stroke='%23231942' stroke-width='2.5'/%3E%3Cline x1='16' y1='6' x2='16' y2='26' stroke='%237B5CFA' stroke-width='2.5' stroke-dasharray='2.5 3'/%3E%3Ccircle cx='16' cy='6' r='2.4' fill='%23FFC145' stroke='%23231942' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='26' r='2.4' fill='%23FFC145' stroke='%23231942' stroke-width='2.5'/%3E%3C/svg%3E">
+
+<!-- Structured data: helps search engines understand what this page is -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SplitCrew",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any (web browser)",
+  "description": "Split bills and track shared expenses with friends. No signup required — create a crew, share a link, log expenses, and settle up.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root{
+  --paper:#FFF7EC;
+  --paper-2:#FFEFD8;
+  --line:#F0DCB8;
+  --ink:#231942;
+  --ink-soft:#6E6295;
+  --teal:#0EAFA0;
+  --teal-soft:#D3F4EF;
+  --red:#FF5D5D;
+  --red-soft:#FFE1DE;
+  --gold:#FFC145;
+  --violet:#7B5CFA;
+  --blue:#3D8BFD;
+  --white:#FFFFFF;
+  --radius:22px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--paper);
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255,93,93,0.16) 3px, transparent 3px),
+    radial-gradient(circle at 78% 12%, rgba(14,175,160,0.18) 3px, transparent 3px),
+    radial-gradient(circle at 45% 65%, rgba(123,92,250,0.16) 3px, transparent 3px),
+    radial-gradient(circle at 90% 78%, rgba(255,193,69,0.22) 3px, transparent 3px),
+    radial-gradient(circle at 18% 85%, rgba(61,139,253,0.16) 3px, transparent 3px),
+    radial-gradient(circle at 60% 30%, rgba(255,93,93,0.12) 2px, transparent 2px);
+  background-size:150px 150px,170px 170px,140px 140px,160px 160px,180px 180px,110px 110px;
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:28px 16px 60px;
+}
+#app{width:100%;max-width:640px;}
+.page-wrap{width:100%;max-width:640px;}
+.site-footer{text-align:center;font-size:11px;color:var(--ink-soft);margin-top:32px;}
+.site-footer a{color:var(--ink-soft);text-decoration:underline;text-underline-offset:2px;}
+.brand{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.brand-mark{display:flex;align-items:center;gap:10px;}
+.logo-icon{flex-shrink:0;}
+.brand h1{
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;
+  font-size:28px;
+  letter-spacing:-0.01em;
+  margin:0;
+  color:var(--ink);
+}
+.brand h1 span{color:var(--red);}
+.brand .tagline{
+  font-size:12px;
+  color:var(--ink-soft);
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.crew-bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  color:var(--ink-soft);
+  flex-wrap:wrap;
+}
+.crew-bar b{color:var(--ink);font-family:'IBM Plex Mono',monospace;letter-spacing:0.02em;}
+.link-btn{
+  background:none;border:none;color:var(--teal);cursor:pointer;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:700;
+  text-decoration:underline;text-underline-offset:2px;padding:0;
+}
+
+/* card base */
+.card{
+  background:var(--white);
+  border:2.5px solid var(--ink);
+  border-radius:var(--radius);
+  padding:28px;
+  box-shadow:6px 6px 0 var(--red);
+}
+
+/* landing */
+.landing-wrap{position:relative;max-width:420px;margin:44px auto 0;}
+.landing-wrap .blob{
+  position:absolute;top:-46px;left:50%;transform:translateX(-50%);
+  width:230px;height:230px;border-radius:50%;z-index:0;
+  background:radial-gradient(circle, rgba(123,92,250,0.45), rgba(14,175,160,0.3) 55%, transparent 72%);
+  filter:blur(2px);
+}
+.landing-card{text-align:center;position:relative;z-index:1;box-shadow:7px 7px 0 var(--violet);}
+.landing-card .stub-title{
+  font-family:'Baloo 2',sans-serif;
+  font-weight:800;font-size:27px;line-height:1.2;letter-spacing:-0.01em;margin:0 0 8px;
+}
+.landing-card .stub-sub{color:var(--ink-soft);font-size:14px;margin-bottom:26px;font-weight:500;}
+.field{text-align:left;margin-bottom:16px;}
+.field label{
+  display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;
+  color:var(--ink-soft);margin-bottom:6px;font-weight:700;
+}
+.field input, .field select{
+  width:100%;padding:12px 14px;border:2px solid var(--ink);border-radius:12px;
+  font-family:'IBM Plex Mono',monospace;font-size:15px;background:var(--paper);color:var(--ink);
+}
+.field input:focus, .field select:focus{outline:2.5px solid var(--teal);outline-offset:1px;}
+.btn{
+  font-family:'Inter',sans-serif;font-weight:700;font-size:14px;
+  border:2.5px solid var(--ink);border-radius:999px;padding:13px 22px;cursor:pointer;
+  background:var(--ink);color:var(--paper);
+  box-shadow:4px 4px 0 var(--gold);
+  transition:transform .08s ease;
+}
+.btn:hover{transform:translate(-2px,-2px);}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--gold);}
+.btn.full{width:100%;}
+.btn.teal{background:var(--teal);border-color:var(--ink);box-shadow:4px 4px 0 var(--red);}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:none;border-style:dashed;}
+.btn.small{padding:8px 14px;font-size:12px;box-shadow:2.5px 2.5px 0 var(--gold);}
+.note{font-size:11.5px;color:var(--ink-soft);margin-top:16px;line-height:1.5;}
+.error{color:var(--red);font-size:13px;margin:8px 0 0;font-weight:700;}
+
+/* members chips */
+.members-row{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 22px;}
+.chip{
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;
+  border:2px solid var(--ink);border-radius:999px;padding:5px 12px 5px 5px;
+  background:var(--white);cursor:pointer;user-select:none;
+  display:inline-flex;align-items:center;gap:7px;
+  box-shadow:2.5px 2.5px 0 rgba(35,25,66,0.18);
+  transition:transform .08s ease;
+}
+.chip:hover{transform:translate(-1px,-1px);}
+.chip.on{background:var(--teal);color:white;box-shadow:2.5px 2.5px 0 var(--red);}
+.chip.add{border-style:dashed;background:transparent;padding:6px 12px;box-shadow:none;}
+.avatar{
+  width:20px;height:20px;border-radius:50%;flex-shrink:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:'Inter',sans-serif;font-size:9px;font-weight:700;color:#fff;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,0.7) inset;
+}
+
+/* trips grid */
+.section-label{
+  font-family:'Baloo 2',sans-serif;font-weight:700;font-size:14px;
+  text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-soft);margin:28px 0 14px;
+}
+.trip-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:6px 4px;}
+@media(max-width:480px){.trip-grid{grid-template-columns:1fr;}}
+.trip-card{
+  background:var(--white);border:2.5px solid var(--ink);border-radius:16px;
+  padding:16px;cursor:pointer;position:relative;
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.trip-card:hover{transform:rotate(0deg) translate(-2px,-2px) !important;}
+.trip-card .tname{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px;}
+.trip-card .tmeta{font-size:12px;color:var(--ink-soft);margin-bottom:10px;font-weight:500;}
+.trip-card .ttotal{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:17px;}
+.trip-card.new{
+  display:flex;align-items:center;justify-content:center;
+  border-style:dashed;box-shadow:none !important;color:var(--ink-soft);font-weight:700;
+  min-height:88px;transform:none !important;font-family:'Baloo 2',sans-serif;
+}
+.trip-card.new:hover{background:var(--paper-2);}
+
+/* trip detail */
+.back-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.trip-header h2{
+  font-family:'Baloo 2',sans-serif;font-weight:800;font-size:26px;margin:0 0 2px;
+}
+.trip-header .tmeta{font-size:13px;color:var(--ink-soft);margin-bottom:16px;font-weight:500;}
+
+.expense-row{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:12px 0;border-bottom:2px dashed var(--line);
+  font-size:14px;gap:10px;
+}
+.expense-row:last-child{border-bottom:none;}
+.expense-left .edesc{font-weight:700;}
+.expense-left .emeta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+.expense-amt{font-family:'IBM Plex Mono',monospace;font-weight:700;white-space:nowrap;}
+.expense-del{
+  background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;font-weight:700;
+  text-decoration:underline;margin-left:8px;padding:0;
+}
+
+.add-expense-form{margin-top:20px;padding-top:20px;border-top:2.5px dashed var(--ink);}
+.form-row{display:flex;gap:10px;margin-bottom:12px;}
+.form-row .field{flex:1;margin-bottom:0;}
+
+/* perforation + settle up */
+.perforation{
+  height:0;border-top:3px dashed var(--violet);margin:32px 0 22px;position:relative;
+}
+.perforation::before, .perforation::after{
+  content:'';position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;
+  background:var(--paper);border:2.5px solid var(--ink);
+}
+.perforation::before{left:-38px;}
+.perforation::after{right:-38px;}
+.settle-title{
+  font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;
+  text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px;
+}
+.settle-empty{color:var(--ink-soft);font-size:13px;}
+.settle-txn{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 15px;background:var(--paper-2);border:2px solid var(--ink);border-radius:12px;margin-bottom:9px;
+  font-size:14px;
+}
+.settle-txn .arrow{color:var(--violet);margin:0 6px;font-weight:700;}
+.settle-txn .amt{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--red);}
+.balances-mini{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.bal-chip{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;border-radius:8px;padding:6px 10px 6px 9px;
+  border-left:4px solid var(--ink-soft);font-weight:600;
+}
+.bal-chip.pos{background:var(--teal-soft);color:var(--teal);}
+.bal-chip.neg{background:var(--red-soft);color:var(--red);}
+.bal-chip.zero{background:var(--paper-2);color:var(--ink-soft);}
+
+.loading{text-align:center;color:var(--ink-soft);padding:40px 0;font-size:14px;font-weight:600;}
+
+.share-box{
+  display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;
+  flex-basis:100%;width:100%;
+}
+.share-box input{
+  flex:1;min-width:180px;padding:9px 11px;border:2px solid var(--ink);border-radius:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--paper-2);color:var(--ink);
+}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+  <div id="app"></div>
+  <footer class="site-footer"><a href="/privacy.html">Privacy</a></footer>
+</div>
+
+<script>
+// ============================================================
+// SUPABASE CONFIG
+// These two placeholders are NOT real values — they get swapped for the real
+// project URL and anon key at deploy time (see README.md → "Deploying").
+// The actual values live only in Cloudflare Pages' environment variable
+// settings, never in this file or in git history.
+//
+// Note on the anon key specifically: it's called "anon" because it's designed
+// to be public — Supabase expects it to sit in client-side code like this.
+// It's not a password. The real access control is the locked-down database
+// functions in schema.sql (which only allow fetching one exact key at a
+// time, not browsing everything) — never the secrecy of this key.
+// NEVER put a "service_role" key here or anywhere in this repo — that one
+// bypasses all row-level security and is the one that must stay truly secret.
+// ============================================================
+const SUPABASE_URL = '__SUPABASE_URL__';
+const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+
+const state = { code:null, name:null, group:null, tripId:null, trip:null };
+
+// ---------- storage helpers ----------
+// Personal, device-only data (like "which crew/name did I last use") lives in
+// localStorage — no need to hit the network for that.
+// Shared, cross-device data (crews, outings, expenses) goes through Supabase,
+// via the locked-down kv_get/kv_set functions defined in schema.sql — the
+// public API key can only ever fetch or write one exact key at a time, never
+// list or browse everything, which mirrors how the crew-code access worked before.
+// Small visible error banner — storage failures used to fail silently and just
+// bounce back to the dashboard, which was impossible to debug. Now they show up.
+function showErrorToast(msg){
+  let el = document.getElementById('err-toast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'err-toast';
+    el.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;max-width:90vw;z-index:9999;box-shadow:4px 4px 0 var(--red);';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 6000);
+}
+
+async function getJSON(key, shared){
+  if(!shared){
+    try{
+      const v = localStorage.getItem('sc:' + key);
+      return v ? JSON.parse(v) : null;
+    }catch(e){ return null; }
+  }
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/kv_get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ p_key: key })
+    });
+    if(!res.ok){
+      const errText = await res.text().catch(() => '');
+      console.error('kv_get failed:', res.status, errText);
+      showErrorToast(`Couldn't reach the database (${res.status}). Open the browser console for details.`);
+      return null;
+    }
+    const data = await res.json();
+    return (data === null || data === undefined) ? null : data;
+  }catch(e){
+    console.error('kv_get failed', e);
+    showErrorToast('Network error reaching the database — check your connection.');
+    return null;
+  }
+}
+async function setJSON(key, value, shared){
+  if(!shared){
+    try{
+      localStorage.setItem('sc:' + key, JSON.stringify(value));
+      return true;
+    }catch(e){ return false; }
+  }
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/kv_set`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ p_key: key, p_value: value })
+    });
+    if(!res.ok){
+      const errText = await res.text().catch(() => '');
+      console.error('kv_set failed:', res.status, errText);
+      showErrorToast(`Save failed (${res.status}). Open the browser console for details.`);
+      return false;
+    }
+    return true;
+  }catch(e){
+    console.error('kv_set failed', e);
+    showErrorToast('Network error saving — check your connection.');
+    return false;
+  }
+}
+
+// Used only to build a safe storage key — never shown to the user.
+// Storage keys can't contain whitespace, slashes, or quotes, so those get
+// stripped/collapsed here, but the code people actually see (group.code)
+// keeps whatever they typed, spaces and all.
+function normalizeCode(raw){
+  return (raw||'')
+    .trim()
+    .replace(/["'\\/]/g,'')
+    .replace(/\s+/g,'-')
+    .toUpperCase()
+    .slice(0,120);
+}
+function groupKey(code){ return 'group:' + normalizeCode(code); }
+function tripKey(code, tripId){ return 'trip:' + normalizeCode(code) + ':' + tripId; }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function money(n){ return '₹' + (Math.round(n*100)/100).toLocaleString('en-IN'); }
+
+// ---------- share links ----------
+function getUrlParams(){
+  try{ return new URLSearchParams(window.location.search); }catch(e){ return new URLSearchParams(); }
+}
+function clearUrlParams(){
+  try{ window.history.replaceState({}, '', window.location.pathname); }catch(e){}
+}
+function shareLink(code, tripId){
+  const base = window.location.origin + window.location.pathname;
+  let url = base + '?crew=' + encodeURIComponent(code);
+  if(tripId) url += '&trip=' + encodeURIComponent(tripId);
+  return url;
+}
+// small popover with the link in a selectable box + copy button (clipboard API
+// can be blocked in sandboxed previews, so this always works as a fallback)
+function toggleShareBox(anchorBtn, url){
+  const existing = document.getElementById('share-box');
+  if(existing){ existing.remove(); if(existing.dataset.for === url) return; }
+  const box = document.createElement('div');
+  box.id = 'share-box';
+  box.dataset.for = url;
+  box.className = 'share-box';
+  box.innerHTML = `
+    <input readonly id="share-box-input" value="${escapeHtml(url)}">
+    <button class="btn small teal" type="button" id="share-box-copy">Copy</button>
+  `;
+  anchorBtn.insertAdjacentElement('afterend', box);
+  const inp = document.getElementById('share-box-input');
+  inp.onclick = () => inp.select();
+  document.getElementById('share-box-copy').onclick = async () => {
+    let ok = false;
+    try{ await navigator.clipboard.writeText(url); ok = true; }catch(e){
+      try{ inp.select(); document.execCommand('copy'); ok = true; }catch(e2){ ok = false; }
+    }
+    const btn = document.getElementById('share-box-copy');
+    btn.textContent = ok ? 'Copied!' : 'Select & copy';
+    setTimeout(() => { if(document.getElementById('share-box-copy')) btn.textContent = 'Copy'; }, 1800);
+  };
+}
+
+// ---------- settlement engine ----------
+function computeSettlement(members, expenses){
+  const bal = {};
+  members.forEach(m => bal[m] = 0);
+  expenses.forEach(e => {
+    if(!(e.paidBy in bal)) bal[e.paidBy] = 0;
+    bal[e.paidBy] += e.amount;
+    const share = e.amount / e.splitAmong.length;
+    e.splitAmong.forEach(p => {
+      if(!(p in bal)) bal[p] = 0;
+      bal[p] -= share;
+    });
+  });
+  Object.keys(bal).forEach(k => bal[k] = Math.round(bal[k]*100)/100);
+
+  const creditors = Object.entries(bal).filter(([,v]) => v > 0.005).map(([n,v]) => ({n,v})).sort((a,b)=>b.v-a.v);
+  const debtors = Object.entries(bal).filter(([,v]) => v < -0.005).map(([n,v]) => ({n,v:-v})).sort((a,b)=>b.v-a.v);
+  const txns = [];
+  let ci=0, di=0;
+  while(ci < creditors.length && di < debtors.length){
+    const c = creditors[ci], d = debtors[di];
+    const amt = Math.min(c.v, d.v);
+    if(amt > 0.005) txns.push({from:d.n, to:c.n, amount:Math.round(amt*100)/100});
+    c.v -= amt; d.v -= amt;
+    if(c.v <= 0.005) ci++;
+    if(d.v <= 0.005) di++;
+  }
+  return { balances: bal, txns };
+}
+
+// ---------- render root ----------
+function render(html){ document.getElementById('app').innerHTML = html; }
+
+function brandHeader(sub){
+  return `<div class="brand">
+    <div class="brand-mark">
+      <svg class="logo-icon" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+        <rect x="3" y="6" width="26" height="20" rx="4" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+        <line x1="16" y1="6" x2="16" y2="26" stroke="var(--violet)" stroke-width="2.5" stroke-dasharray="2.5 3"/>
+        <circle cx="16" cy="6" r="2.4" fill="var(--gold)" stroke="var(--ink)" stroke-width="2.5"/>
+        <circle cx="16" cy="26" r="2.4" fill="var(--gold)" stroke="var(--ink)" stroke-width="2.5"/>
+      </svg>
+      <div>
+        <h1>Split<span>Crew</span></h1>
+        <div class="tagline">${sub}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ---------- LANDING ----------
+function renderLanding(err, prefillCode){
+  render(`
+    ${brandHeader('keep score on the weekend, split it fair')}
+    <div class="landing-wrap">
+      <div class="blob" aria-hidden="true"></div>
+      <div class="card landing-card">
+      <div class="stub-title">${randomHeroLine()}</div>
+      <div class="stub-sub">${prefillCode ? 'You\'ve been invited to a crew — add your name to join.' : 'Enter your crew\'s code to join, or make up a new one to start a crew.'}</div>
+      <div class="field">
+        <label for="in-code">Crew code</label>
+        <input id="in-code" placeholder="e.g. Sunday Crew" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="in-name">Your name</label>
+        <input id="in-name" placeholder="e.g. Alex" autocomplete="off">
+      </div>
+      <button class="btn full teal" id="btn-join">Join / start crew →</button>
+      ${err ? `<div class="error">${err}</div>` : ''}
+      <div class="note">Anyone who has the crew code (or the share link) can see and add to this crew's outings, so pick a code only your crew would guess. Codes aren't case-sensitive and extra spacing doesn't matter.</div>
+      </div>
+    </div>
+  `);
+  document.getElementById('btn-join').onclick = onJoin;
+  document.getElementById('in-name').addEventListener('keydown', e => { if(e.key==='Enter') onJoin(); });
+  if(prefillCode){
+    document.getElementById('in-code').value = prefillCode;
+    document.getElementById('in-name').focus();
+  }
+}
+
+async function joinCrew(rawCode, name){
+  let group = await getJSON(groupKey(rawCode), true);
+  if(!group){
+    group = { code: rawCode, members: [name], trips: [] };
+    await setJSON(groupKey(rawCode), group, true);
+  } else if(!group.members.includes(name)){
+    group.members.push(name);
+    await setJSON(groupKey(rawCode), group, true);
+  }
+  state.code = group.code;
+  state.name = name;
+  state.group = group;
+  await setJSON('session', { code: state.code, name }, false);
+  return group;
+}
+
+async function onJoin(){
+  const rawCode = document.getElementById('in-code').value.trim();
+  const name = document.getElementById('in-name').value.trim();
+  if(!normalizeCode(rawCode) || !name){ renderLanding('Enter both a crew code and your name.', rawCode); return; }
+  render(`${brandHeader('loading your crew…')}<div class="loading">Pulling up the tab…</div>`);
+  await joinCrew(rawCode, name);
+  const params = getUrlParams();
+  const linkedTrip = params.get('trip');
+  clearUrlParams();
+  if(linkedTrip && state.group.trips.some(t => t.id === linkedTrip)){
+    openTrip(linkedTrip);
+  } else {
+    renderDashboard();
+  }
+}
+
+// ---------- DASHBOARD ----------
+function renderDashboard(){
+  const g = state.group;
+  const trips = [...g.trips].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  render(`
+    ${brandHeader("your crew's outings")}
+    <div class="crew-bar">
+      Crew: <b>${escapeHtml(g.code)}</b> · ${g.members.length} member${g.members.length!==1?'s':''}
+      <button class="link-btn" id="btn-share">share link</button>
+      <button class="link-btn" id="btn-switch">switch crew</button>
+    </div>
+    <div class="members-row" id="member-chips"></div>
+    <div class="section-label">Outings</div>
+    <div class="trip-grid" id="trip-grid"></div>
+  `);
+  const chips = document.getElementById('member-chips');
+  g.members.forEach(m => {
+    const c = document.createElement('span');
+    c.className = 'chip' + (m===state.name ? ' on':'');
+    c.innerHTML = avatarChipHTML(m);
+    chips.appendChild(c);
+  });
+  addPersonChip(chips, async (val) => {
+    if(!g.members.includes(val)) g.members.push(val);
+    await setJSON(groupKey(state.code), g, true);
+    renderDashboard();
+  });
+
+  const grid = document.getElementById('trip-grid');
+  const CARD_ACCENTS = ['var(--red)','var(--teal)','var(--gold)','var(--violet)','var(--blue)'];
+  trips.forEach((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'trip-card';
+    const rotate = (i % 2 === 0) ? -1.4 : 1.6;
+    const accent = CARD_ACCENTS[i % CARD_ACCENTS.length];
+    div.style.transform = `rotate(${rotate}deg)`;
+    div.style.boxShadow = `5px 5px 0 ${accent}`;
+    div.innerHTML = `<div class="tname">${escapeHtml(t.name)}</div>
+      <div class="tmeta">${t.date || ''} · ${t.memberCount||0} people</div>
+      <div class="ttotal">${money(t.total||0)}</div>`;
+    div.onclick = () => openTrip(t.id);
+    grid.appendChild(div);
+  });
+  const addDiv = document.createElement('div');
+  addDiv.className = 'trip-card new';
+  addDiv.textContent = '+ New outing';
+  addDiv.onclick = renderNewTrip;
+  grid.appendChild(addDiv);
+
+  document.getElementById('btn-share').onclick = (ev) => toggleShareBox(ev.currentTarget, shareLink(g.code));
+
+  document.getElementById('btn-switch').onclick = async () => {
+    await setJSON('session', null, false);
+    state.code = null; state.group = null;
+    renderLanding();
+  };
+}
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+// ---------- avatars: every person in a crew gets a consistent color, everywhere ----------
+const AVATAR_COLORS = ['#0EAFA0','#FF5D5D','#FFC145','#7B5CFA','#3D8BFD','#3CB371','#FF7EB6','#FF9142'];
+function colorForName(name){
+  let h = 0;
+  for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+function initials(name){
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if(parts.length===0) return '?';
+  if(parts.length===1) return parts[0].slice(0,2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
+function avatarChipHTML(name){
+  return `<span class="avatar" style="background:${colorForName(name)}">${escapeHtml(initials(name))}</span><span>${escapeHtml(name)}</span>`;
+}
+
+// A fresh, funky one-liner every time someone lands here
+const HERO_LINES = [
+  'Heard you guys had fun. Time to pay up.',
+  'Split payments? Let\u2019s hit it.',
+  'Weekend\u2019s over. The math isn\u2019t.',
+  'Nobody remembers who paid. We do.',
+  'Friends don\u2019t do mental math.',
+  'Splitting bills, not friendships.',
+  'Great trip, terrible memory for who owes who.',
+  'Someone\u2019s gotta pay for that bowling night.',
+  'The fun\u2019s over. Time to settle up.',
+  'Bowling, pizza, gas \u2014 now the fun part: math.'
+];
+function randomHeroLine(){ return HERO_LINES[Math.floor(Math.random()*HERO_LINES.length)]; }
+
+// reusable inline "add person" chip — avoids window.prompt(), which browsers/sandboxed
+// previews often block, so it must use a real input field instead
+function addPersonChip(wrap, onAdd){
+  const addC = document.createElement('span');
+  addC.className = 'chip add';
+  addC.textContent = '+ add person';
+  addC.onclick = () => {
+    wrap.removeChild(addC);
+    const holder = document.createElement('span');
+    holder.style.cssText = 'display:inline-flex;gap:6px;align-items:center;';
+    const inp = document.createElement('input');
+    inp.placeholder = 'Name';
+    inp.style.cssText = 'font-family:"IBM Plex Mono",monospace;font-size:12.5px;border:1.5px solid var(--ink);border-radius:20px;padding:6px 12px;width:110px;background:var(--paper);color:var(--ink);';
+    const okBtn = document.createElement('button');
+    okBtn.type = 'button';
+    okBtn.className = 'btn small teal';
+    okBtn.textContent = 'add';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'btn small ghost';
+    cancelBtn.textContent = '✕';
+    holder.appendChild(inp); holder.appendChild(okBtn); holder.appendChild(cancelBtn);
+    wrap.appendChild(holder);
+    inp.focus();
+    function commit(){
+      const val = inp.value.trim();
+      if(val) onAdd(val);
+    }
+    okBtn.onclick = commit;
+    cancelBtn.onclick = () => { wrap.removeChild(holder); wrap.appendChild(addC); };
+    inp.addEventListener('keydown', e => { if(e.key==='Enter') commit(); if(e.key==='Escape') cancelBtn.onclick(); });
+  };
+  wrap.appendChild(addC);
+}
+
+// ---------- NEW TRIP ----------
+function renderNewTrip(){
+  const g = state.group;
+  const today = new Date().toISOString().slice(0,10);
+  render(`
+    ${brandHeader('start a new outing')}
+    <div class="back-row"><button class="link-btn" id="btn-back">← back to crew</button></div>
+    <div class="card">
+      <div class="field">
+        <label for="tn">What are you doing</label>
+        <input id="tn" placeholder="e.g. Bowling Night">
+      </div>
+      <div class="field">
+        <label for="td">Date</label>
+        <input id="td" type="date" value="${today}">
+      </div>
+      <div class="field">
+        <label>Who's in</label>
+        <div class="members-row" id="who-chips"></div>
+      </div>
+      <button class="btn teal" id="btn-create">Start outing →</button>
+      <div class="error" id="tn-err"></div>
+    </div>
+  `);
+  document.getElementById('btn-back').onclick = renderDashboard;
+  const selected = new Set(g.members);
+  const wc = document.getElementById('who-chips');
+  function drawChips(){
+    wc.innerHTML='';
+    g.members.forEach(m => {
+      const c = document.createElement('span');
+      c.className = 'chip' + (selected.has(m) ? ' on':'');
+      c.innerHTML = avatarChipHTML(m);
+      c.onclick = () => { selected.has(m) ? selected.delete(m) : selected.add(m); drawChips(); };
+      wc.appendChild(c);
+    });
+    addPersonChip(wc, async (val) => {
+      if(!g.members.includes(val)) g.members.push(val);
+      selected.add(val);
+      await setJSON(groupKey(state.code), g, true);
+      drawChips();
+    });
+  }
+  drawChips();
+
+  document.getElementById('btn-create').onclick = async (ev) => {
+    const btn = ev.currentTarget;
+    if(btn.disabled) return;
+    const name = document.getElementById('tn').value.trim();
+    const date = document.getElementById('td').value;
+    if(!name || selected.size===0){
+      document.getElementById('tn-err').textContent = 'Give it a name and pick at least one person.';
+      return;
+    }
+    btn.disabled = true;
+    const id = uid();
+    const trip = { id, name, date, members: [...selected], expenses: [] };
+    await setJSON(tripKey(state.code, id), trip, true);
+    g.trips.push({ id, name, date, memberCount: selected.size, total: 0 });
+    await setJSON(groupKey(state.code), g, true);
+    openTrip(id);
+  };
+}
+
+// ---------- TRIP DETAIL ----------
+async function openTrip(tripId){
+  render(`${brandHeader('loading outing…')}<div class="loading">Fetching the tab…</div>`);
+  const trip = await getJSON(tripKey(state.code, tripId), true);
+  if(!trip){
+    showErrorToast("Couldn't load that outing — see the toast/console for why.");
+    renderDashboard();
+    return;
+  }
+  state.tripId = tripId;
+  state.trip = trip;
+  renderTripDetail();
+}
+
+function renderTripDetail(){
+  const t = state.trip;
+  const g = state.group;
+  const total = t.expenses.reduce((s,e)=>s+e.amount,0);
+
+  render(`
+    ${brandHeader(t.date || '')}
+    <div class="back-row"><button class="link-btn" id="btn-back">← back to crew</button></div>
+    <div class="card">
+      <div class="trip-header">
+        <h2>${escapeHtml(t.name)}</h2>
+        <div class="tmeta">${t.date || ''} · ${money(total)} total · <button class="link-btn" id="btn-share-trip" style="font-size:12px;">share this outing</button></div>
+      </div>
+      <div class="section-label" style="margin-top:0;">Who's in</div>
+      <div class="members-row" id="who-chips"></div>
+
+      <div class="section-label">Expenses</div>
+      <div id="expense-list"></div>
+      ${t.expenses.length===0 ? '<div class="settle-empty">No expenses yet — add the first one below.</div>' : ''}
+
+      <div class="add-expense-form">
+        <div class="form-row">
+          <div class="field"><label for="ed">What</label><input id="ed" placeholder="e.g. Pizza"></div>
+          <div class="field" style="max-width:120px;"><label for="ea">Amount</label><input id="ea" type="number" inputmode="decimal" placeholder="0"></div>
+        </div>
+        <div class="field">
+          <label for="ep">Paid by</label>
+          <select id="ep"></select>
+        </div>
+        <div class="field">
+          <label>Split among</label>
+          <div class="members-row" id="split-chips"></div>
+        </div>
+        <button class="btn teal" id="btn-add-exp">+ Add expense</button>
+        <div class="error" id="exp-err"></div>
+      </div>
+
+      <div class="perforation"></div>
+      <div class="settle-title">Settle up</div>
+      <div id="settle-area"></div>
+    </div>
+  `);
+
+  document.getElementById('btn-back').onclick = renderDashboard;
+  document.getElementById('btn-share-trip').onclick = (ev) => toggleShareBox(ev.currentTarget.closest('.tmeta'), shareLink(g.code, t.id));
+
+  // who chips (trip membership toggle)
+  const whoWrap = document.getElementById('who-chips');
+  function drawWho(){
+    whoWrap.innerHTML='';
+    g.members.forEach(m => {
+      const c = document.createElement('span');
+      c.className = 'chip' + (t.members.includes(m) ? ' on':'');
+      c.innerHTML = avatarChipHTML(m);
+      c.onclick = async () => {
+        if(t.members.includes(m)) t.members = t.members.filter(x=>x!==m);
+        else t.members.push(m);
+        await saveTrip();
+        renderTripDetail();
+      };
+      whoWrap.appendChild(c);
+    });
+    addPersonChip(whoWrap, async (val) => {
+      if(!g.members.includes(val)) g.members.push(val);
+      if(!t.members.includes(val)) t.members.push(val);
+      await setJSON(groupKey(state.code), g, true);
+      await saveTrip();
+      renderTripDetail();
+    });
+  }
+  drawWho();
+
+  // expense list
+  const list = document.getElementById('expense-list');
+  t.expenses.slice().reverse().forEach(e => {
+    const row = document.createElement('div');
+    row.className = 'expense-row';
+    row.innerHTML = `
+      <div class="expense-left">
+        <div class="edesc">${escapeHtml(e.desc)}</div>
+        <div class="emeta">paid by ${escapeHtml(e.paidBy)} · split ${e.splitAmong.length} way${e.splitAmong.length!==1?'s':''}</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="expense-amt">${money(e.amount)}</div>
+        <button class="expense-del" data-id="${e.id}" style="color:var(--teal);">edit</button>
+        <button class="expense-del" data-id="${e.id}">remove</button>
+      </div>`;
+    const [editBtn, delBtn] = row.querySelectorAll('.expense-del');
+    editBtn.onclick = () => startEditExpense(e.id);
+    delBtn.onclick = async () => {
+      t.expenses = t.expenses.filter(x => x.id !== e.id);
+      await saveTrip(true);
+      renderTripDetail();
+    };
+    list.appendChild(row);
+  });
+
+  // paid-by select
+  const payerSel = document.getElementById('ep');
+  t.members.forEach(m => {
+    const o = document.createElement('option'); o.value=m; o.textContent=m;
+    if(m===state.name) o.selected = true;
+    payerSel.appendChild(o);
+  });
+
+  // split chips (default all trip members)
+  const splitSel = new Set(t.members);
+  const splitWrap = document.getElementById('split-chips');
+  function drawSplit(){
+    splitWrap.innerHTML='';
+    t.members.forEach(m => {
+      const c = document.createElement('span');
+      c.className = 'chip' + (splitSel.has(m) ? ' on':'');
+      c.innerHTML = avatarChipHTML(m);
+      c.onclick = () => { splitSel.has(m) ? splitSel.delete(m) : splitSel.add(m); drawSplit(); };
+      splitWrap.appendChild(c);
+    });
+  }
+  drawSplit();
+
+  let editingId = null;
+  const saveBtn = document.getElementById('btn-add-exp');
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'link-btn';
+  cancelBtn.style.marginLeft = '12px';
+  cancelBtn.textContent = 'cancel edit';
+  cancelBtn.style.display = 'none';
+  saveBtn.insertAdjacentElement('afterend', cancelBtn);
+  cancelBtn.onclick = () => renderTripDetail();
+
+  window.startEditExpense = (id) => {
+    const exp = t.expenses.find(x => x.id === id);
+    if(!exp) return;
+    editingId = id;
+    document.getElementById('ed').value = exp.desc;
+    document.getElementById('ea').value = exp.amount;
+    payerSel.value = exp.paidBy;
+    splitSel.clear();
+    exp.splitAmong.forEach(p => splitSel.add(p));
+    drawSplit();
+    saveBtn.textContent = 'Save changes';
+    cancelBtn.style.display = 'inline';
+    document.querySelector('.add-expense-form').scrollIntoView({ behavior:'smooth', block:'center' });
+  };
+
+  saveBtn.onclick = async () => {
+    const desc = document.getElementById('ed').value.trim();
+    const amount = parseFloat(document.getElementById('ea').value);
+    const paidBy = payerSel.value;
+    if(!desc || !amount || amount<=0 || splitSel.size===0){
+      document.getElementById('exp-err').textContent = 'Add a description, a positive amount, and at least one person to split with.';
+      return;
+    }
+    if(editingId){
+      const exp = t.expenses.find(x => x.id === editingId);
+      if(exp){ exp.desc = desc; exp.amount = amount; exp.paidBy = paidBy; exp.splitAmong = [...splitSel]; }
+    } else {
+      t.expenses.push({ id: uid(), desc, amount, paidBy, splitAmong: [...splitSel] });
+    }
+    editingId = null;
+    await saveTrip(true);
+    renderTripDetail();
+  };
+
+  // settle up
+  const settleArea = document.getElementById('settle-area');
+  const { balances, txns } = computeSettlement(t.members, t.expenses);
+  if(t.expenses.length===0){
+    settleArea.innerHTML = '<div class="settle-empty">Add expenses to see who owes what.</div>';
+  } else if(txns.length===0){
+    settleArea.innerHTML = `<div class="settle-empty">Everyone's square — no one owes anything.</div>`;
+  } else {
+    settleArea.innerHTML = txns.map(tx => `
+      <div class="settle-txn">
+        <span>${escapeHtml(tx.from)} <span class="arrow">→</span> ${escapeHtml(tx.to)}</span>
+        <span class="amt">${money(tx.amount)}</span>
+      </div>`).join('');
+  }
+  const miniWrap = document.createElement('div');
+  miniWrap.className = 'balances-mini';
+  Object.entries(balances).forEach(([n,v]) => {
+    const s = document.createElement('span');
+    s.className = 'bal-chip ' + (v>0.005?'pos':v<-0.005?'neg':'zero');
+    s.style.borderLeftColor = colorForName(n);
+    s.textContent = `${n} ${v>0.005?'+':''}${money(v)}`;
+    miniWrap.appendChild(s);
+  });
+  settleArea.appendChild(miniWrap);
+}
+
+async function saveTrip(updateIndex){
+  await setJSON(tripKey(state.code, state.tripId), state.trip, true);
+  if(updateIndex !== undefined || true){
+    const idx = state.group.trips.find(x => x.id === state.tripId);
+    if(idx){
+      idx.memberCount = state.trip.members.length;
+      idx.total = state.trip.expenses.reduce((s,e)=>s+e.amount,0);
+      idx.name = state.trip.name;
+      idx.date = state.trip.date;
+      await setJSON(groupKey(state.code), state.group, true);
+    }
+  }
+}
+
+// ---------- init ----------
+async function init(){
+  render(`${brandHeader('loading…')}<div class="loading">Setting the table…</div>`);
+  let session = null;
+  try{ session = await getJSON('session', false); }catch(e){ session = null; }
+
+  const params = getUrlParams();
+  const linkedCrew = params.get('crew');
+  const linkedTrip = params.get('trip');
+
+  if(linkedCrew){
+    if(session && session.name){
+      // returning visitor clicking a crew link — join instantly with their remembered name
+      await joinCrew(linkedCrew, session.name);
+      clearUrlParams();
+      if(linkedTrip && state.group.trips.some(t => t.id === linkedTrip)){
+        openTrip(linkedTrip);
+      } else {
+        renderDashboard();
+      }
+      return;
+    }
+    renderLanding(null, linkedCrew);
+    return;
+  }
+
+  if(session && session.code && session.name){
+    const group = await getJSON(groupKey(session.code), true);
+    if(group){
+      state.code = session.code; state.name = session.name; state.group = group;
+      renderDashboard();
+      return;
+    }
+  }
+  renderLanding();
+}
+init();
+</script>
+</body>
+</html>
