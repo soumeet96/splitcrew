@@ -252,10 +252,27 @@ body{
 }
 .perforation::before{left:-38px;}
 .perforation::after{right:-38px;}
+.settle-head{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;
+}
 .settle-title{
   font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;
-  text-transform:uppercase;letter-spacing:0.05em;margin-bottom:14px;
+  text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0;
 }
+.settle-toggle{
+  display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);font-weight:600;cursor:pointer;user-select:none;
+}
+.switch{
+  position:relative;width:38px;height:22px;border:2px solid var(--ink);border-radius:20px;background:var(--paper-2);flex-shrink:0;transition:background .15s;
+}
+.switch::after{
+  content:'';position:absolute;top:1px;left:1px;width:16px;height:16px;border-radius:50%;background:var(--ink);transition:transform .15s;
+}
+.settle-toggle.off .switch{background:var(--paper-2);}
+.settle-toggle.on .switch{background:var(--teal-soft);}
+.settle-toggle.on .switch::after{transform:translateX(16px);background:var(--teal);}
+.settle-note{color:var(--ink-soft);font-size:12px;margin:-8px 0 14px;}
+.report-row{margin-top:16px;}
 .settle-empty{color:var(--ink-soft);font-size:13px;}
 .settle-txn{
   display:flex;justify-content:space-between;align-items:center;
@@ -483,6 +500,41 @@ function computeSettlement(members, expenses){
     c.v -= amt; d.v -= amt;
     if(c.v <= 0.005) ci++;
     if(d.v <= 0.005) di++;
+  }
+  return { balances: bal, txns };
+}
+
+// non-simplified: net debts per pair only, no whole-group cancellation
+function computeRawSettlement(members, expenses){
+  const bal = {};
+  members.forEach(m => bal[m] = 0);
+  const owed = {}; // owed[a][b] = amount a owes b
+  expenses.forEach(e => {
+    if(!(e.paidBy in bal)) bal[e.paidBy] = 0;
+    bal[e.paidBy] += e.amount;
+    const share = e.amount / e.splitAmong.length;
+    e.splitAmong.forEach(p => {
+      if(!(p in bal)) bal[p] = 0;
+      bal[p] -= share;
+      if(p !== e.paidBy){
+        owed[p] = owed[p] || {};
+        owed[p][e.paidBy] = (owed[p][e.paidBy] || 0) + share;
+      }
+    });
+  });
+  Object.keys(bal).forEach(k => bal[k] = Math.round(bal[k]*100)/100);
+
+  const people = [...new Set([...members, ...Object.keys(owed), ...Object.values(owed).flatMap(o=>Object.keys(o))])];
+  const txns = [];
+  for(let i=0;i<people.length;i++){
+    for(let j=i+1;j<people.length;j++){
+      const a = people[i], b = people[j];
+      const ab = (owed[a] && owed[a][b]) || 0;
+      const ba = (owed[b] && owed[b][a]) || 0;
+      const net = Math.round((ab - ba)*100)/100;
+      if(net > 0.005) txns.push({from:a, to:b, amount:net});
+      else if(net < -0.005) txns.push({from:b, to:a, amount:-net});
+    }
   }
   return { balances: bal, txns };
 }
@@ -813,8 +865,13 @@ function renderTripDetail(){
       </div>
 
       <div class="perforation"></div>
-      <div class="settle-title">Settle up</div>
+      <div class="settle-head">
+        <div class="settle-title">Settle up</div>
+        <div class="settle-toggle" id="simplify-toggle"><span class="switch"></span><span id="simplify-label">Simplify debts</span></div>
+      </div>
+      <div class="settle-note" id="settle-note"></div>
       <div id="settle-area"></div>
+      <div class="report-row"><button class="btn small ghost" id="btn-download-report">⬇ Download report</button></div>
     </div>
   `);
 
@@ -942,28 +999,98 @@ function renderTripDetail(){
 
   // settle up
   const settleArea = document.getElementById('settle-area');
-  const { balances, txns } = computeSettlement(t.members, t.expenses);
-  if(t.expenses.length===0){
-    settleArea.innerHTML = '<div class="settle-empty">Add expenses to see who owes what.</div>';
-  } else if(txns.length===0){
-    settleArea.innerHTML = `<div class="settle-empty">Everyone's square — no one owes anything.</div>`;
-  } else {
-    settleArea.innerHTML = txns.map(tx => `
-      <div class="settle-txn">
-        <span>${escapeHtml(tx.from)} <span class="arrow">→</span> ${escapeHtml(tx.to)}</span>
-        <span class="amt">${money(tx.amount)}</span>
-      </div>`).join('');
+  const settleNote = document.getElementById('settle-note');
+  const toggle = document.getElementById('simplify-toggle');
+  const toggleLabel = document.getElementById('simplify-label');
+  let simplify = localStorage.getItem('sc:simplify') !== 'off';
+
+  function drawSettle(){
+    toggle.className = 'settle-toggle ' + (simplify ? 'on' : 'off');
+    toggleLabel.textContent = simplify ? 'Simplify debts' : 'Show all debts';
+    settleNote.textContent = simplify
+      ? 'Fewest payments to settle up — some debts get netted between people.'
+      : 'Every direct debt between two people, shown as-is — nothing netted.';
+
+    const { balances, txns } = simplify ? computeSettlement(t.members, t.expenses) : computeRawSettlement(t.members, t.expenses);
+    if(t.expenses.length===0){
+      settleArea.innerHTML = '<div class="settle-empty">Add expenses to see who owes what.</div>';
+    } else if(txns.length===0){
+      settleArea.innerHTML = `<div class="settle-empty">Everyone's square — no one owes anything.</div>`;
+    } else {
+      settleArea.innerHTML = txns.map(tx => `
+        <div class="settle-txn">
+          <span>${escapeHtml(tx.from)} <span class="arrow">→</span> ${escapeHtml(tx.to)}</span>
+          <span class="amt">${money(tx.amount)}</span>
+        </div>`).join('');
+    }
+    const miniWrap = document.createElement('div');
+    miniWrap.className = 'balances-mini';
+    Object.entries(balances).forEach(([n,v]) => {
+      const s = document.createElement('span');
+      s.className = 'bal-chip ' + (v>0.005?'pos':v<-0.005?'neg':'zero');
+      s.style.borderLeftColor = colorForName(n);
+      s.textContent = `${n} ${v>0.005?'+':''}${money(v)}`;
+      miniWrap.appendChild(s);
+    });
+    settleArea.appendChild(miniWrap);
   }
-  const miniWrap = document.createElement('div');
-  miniWrap.className = 'balances-mini';
+  drawSettle();
+  toggle.onclick = () => {
+    simplify = !simplify;
+    localStorage.setItem('sc:simplify', simplify ? 'on' : 'off');
+    drawSettle();
+  };
+
+  document.getElementById('btn-download-report').onclick = () => downloadTripReport(t, simplify);
+}
+
+function downloadTripReport(t, simplify){
+  const total = t.expenses.reduce((s,e)=>s+e.amount,0);
+  const { balances, txns } = simplify ? computeSettlement(t.members, t.expenses) : computeRawSettlement(t.members, t.expenses);
+  const lines = [];
+  lines.push(`SplitCrew — ${t.name}`);
+  if(t.date) lines.push(t.date);
+  lines.push('='.repeat(40));
+  lines.push('');
+  lines.push(`Members: ${t.members.join(', ')}`);
+  lines.push(`Total spent: ${money(total)}`);
+  lines.push('');
+  lines.push('Expenses');
+  lines.push('-'.repeat(40));
+  if(t.expenses.length===0){
+    lines.push('(none)');
+  } else {
+    t.expenses.forEach(e => {
+      lines.push(`${e.desc} — ${money(e.amount)}`);
+      lines.push(`  paid by ${e.paidBy}, split among ${e.splitAmong.join(', ')}`);
+    });
+  }
+  lines.push('');
+  lines.push(`Balances (${simplify ? 'simplified' : 'all debts, not simplified'})`);
+  lines.push('-'.repeat(40));
   Object.entries(balances).forEach(([n,v]) => {
-    const s = document.createElement('span');
-    s.className = 'bal-chip ' + (v>0.005?'pos':v<-0.005?'neg':'zero');
-    s.style.borderLeftColor = colorForName(n);
-    s.textContent = `${n} ${v>0.005?'+':''}${money(v)}`;
-    miniWrap.appendChild(s);
+    lines.push(`${n}: ${v>0.005?'+':''}${money(v)}`);
   });
-  settleArea.appendChild(miniWrap);
+  lines.push('');
+  lines.push('Settle up');
+  lines.push('-'.repeat(40));
+  if(txns.length===0){
+    lines.push('Everyone is square — no one owes anything.');
+  } else {
+    txns.forEach(tx => lines.push(`${tx.from} owes ${tx.to} ${money(tx.amount)}`));
+  }
+  lines.push('');
+  lines.push('Generated by SplitCrew');
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${t.name.replace(/[^a-z0-9]+/gi,'-').toLowerCase() || 'outing'}-report.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 async function saveTrip(updateIndex){
