@@ -6,7 +6,7 @@
 
 <!-- ===== SEO tags for splitcrew.in ===== -->
 <title>SplitCrew — Split Bills & Track Expenses With Friends</title>
-<meta name="description" content="Split bills and track shared expenses with your crew — no signup, no app download. Create a crew, log what everyone spent on your outing, and SplitCrew works out who owes who. A free, simple Splitwise alternative.">
+<meta name="description" content="Split bills and track shared expenses with your crew — no signup, no app download. Create a crew, log what everyone spent on your outing, and SplitCrew works out who owes who. Free forever and no subscription BS.">
 <link rel="canonical" href="https://splitcrew.in/">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#231942">
@@ -14,7 +14,7 @@
 <!-- Open Graph (link previews on WhatsApp, iMessage, Slack, etc.) -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="SplitCrew — Split Bills & Track Expenses With Friends">
-<meta property="og:description" content="No signup. Just create a crew, log the spends from your outing, and SplitCrew works out who owes who.">
+<meta property="og:description" content="No signup. Just create a crew, log the spends from your outing, and SplitCrew works out who owes who. Free forever and no subscription BS.">
 <meta property="og:url" content="https://splitcrew.in/">
 <meta property="og:image" content="https://splitcrew.in/og-image.png">
 <meta property="og:site_name" content="SplitCrew">
@@ -22,7 +22,7 @@
 <!-- Twitter/X card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SplitCrew — Split Bills & Track Expenses With Friends">
-<meta name="twitter:description" content="No signup. Create a crew, log the spends, SplitCrew works out who owes who.">
+<meta name="twitter:description" content="No signup. Create a crew, log the spends, SplitCrew works out who owes who. Free forever and no subscription BS.">
 <meta name="twitter:image" content="https://splitcrew.in/og-image.png">
 
 <!-- Favicon: inline SVG so no separate image file is required to go live -->
@@ -300,6 +300,9 @@ body{
   flex:1;min-width:180px;padding:9px 11px;border:2px solid var(--ink);border-radius:10px;
   font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--paper-2);color:var(--ink);
 }
+.share-box .share-note{
+  flex-basis:100%;width:100%;font-size:11px;color:var(--ink-soft);font-style:italic;
+}
 </style>
 </head>
 <body>
@@ -459,6 +462,7 @@ function toggleShareBox(anchorBtn, url){
   box.innerHTML = `
     <input readonly id="share-box-input" value="${escapeHtml(url)}">
     <button class="btn small teal" type="button" id="share-box-copy">Copy</button>
+    <div class="share-note">Free forever and no subscription BS — share away.</div>
   `;
   anchorBtn.insertAdjacentElement('afterend', box);
   const inp = document.getElementById('share-box-input');
@@ -562,7 +566,7 @@ function brandHeader(sub){
 // ---------- LANDING ----------
 function renderLanding(err, prefillCode){
   render(`
-    ${brandHeader('keep score on the weekend, split it fair')}
+    ${brandHeader('split it fair — free forever, no subscription BS')}
     <div class="landing-wrap">
       <div class="blob" aria-hidden="true"></div>
       <div class="card landing-card">
