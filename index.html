@@ -275,12 +275,41 @@ body{
 .report-row{margin-top:16px;}
 .settle-empty{color:var(--ink-soft);font-size:13px;}
 .settle-txn{
-  display:flex;justify-content:space-between;align-items:center;
+  display:flex;flex-direction:column;gap:8px;
   padding:11px 15px;background:var(--paper-2);border:2px solid var(--ink);border-radius:12px;margin-bottom:9px;
   font-size:14px;
 }
+.settle-txn-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
 .settle-txn .arrow{color:var(--violet);margin:0 6px;font-weight:700;}
 .settle-txn .amt{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--red);}
+.settle-txn-actions{display:flex;align-items:center;gap:8px;}
+.settle-btn{
+  background:var(--paper);border:1.5px solid var(--ink);border-radius:20px;padding:4px 11px;
+  font-size:11px;font-weight:700;cursor:pointer;color:var(--ink);font-family:'Inter',sans-serif;
+}
+.settle-btn:hover{background:var(--teal-soft);border-color:var(--teal);}
+.settle-progress-label{font-size:11px;color:var(--ink-soft);margin-bottom:4px;font-weight:600;}
+.settle-progress-bar{height:6px;border-radius:4px;background:var(--paper);border:1.5px solid var(--ink);overflow:hidden;}
+.settle-progress-fill{height:100%;background:var(--teal);}
+.settle-inline-form{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.settle-inline-form input{
+  font-family:'IBM Plex Mono',monospace;font-size:13px;border:1.5px solid var(--ink);border-radius:20px;
+  padding:5px 10px;width:90px;background:var(--paper);color:var(--ink);
+}
+.settle-inline-err{color:var(--red);font-size:11px;font-weight:600;width:100%;}
+.settle-history{margin-top:18px;}
+.settle-history-title{
+  font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;
+  letter-spacing:.04em;margin-bottom:8px;
+}
+.settle-history-item{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  font-size:12.5px;color:var(--ink-soft);padding:7px 0;border-bottom:1px dashed var(--paper-2);
+}
+.settle-history-item:last-child{border-bottom:none;}
+.settle-history-item .shi-amt{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--ink);}
+.settle-history-item .shi-undo{color:var(--red);cursor:pointer;font-weight:700;font-size:11.5px;background:none;border:none;font-family:'Inter',sans-serif;}
+.settle-history-item .shi-src{font-style:italic;}
 .balances-mini{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
 .bal-chip{
   font-family:'IBM Plex Mono',monospace;font-size:12px;border-radius:8px;padding:6px 10px 6px 9px;
@@ -593,6 +622,138 @@ function computeRawSettlement(members, expenses){
   return { balances: bal, txns };
 }
 
+// A settlement ({id, from, to, amount, date}) is a debtor paying a creditor
+// directly. Treating it as a fully-unsplit expense means it flows through
+// computeSettlement/computeRawSettlement above with no changes to that math.
+function settlementToExpense(s){
+  return { paidBy: s.from, splitAmong: [s.to], amount: s.amount };
+}
+
+// Renders a full settle-up block — toggle, debt rows with per-row "Settle"
+// (full or partial) + progress bar, balance chips, and a payment history
+// log — and redraws itself after every settle/undo. Shared by the outing
+// page and the dashboard's overall balance so both behave identically.
+//
+// cfg = {
+//   areaEl, noteEl, toggleEl, labelEl, historyEl,  // DOM nodes already on the page
+//   members, expenses,                             // the real expenses being settled
+//   allSettlements,                                 // settlements netted into balances/progress (may include read-only ones from elsewhere)
+//   writableSettlements,                            // the subset Settle/undo write into
+//   onSettlementsChange: async (newWritableSettlements) => {}  // persist, then re-render (caller's responsibility)
+// }
+function renderSettlementUI(cfg){
+  const { areaEl, noteEl, toggleEl, labelEl, historyEl, members, expenses, allSettlements, writableSettlements, onSettlementsChange } = cfg;
+  let simplify = localStorage.getItem('sc:simplify') !== 'off';
+
+  function settledSoFar(from, to){
+    return allSettlements.filter(s => s.from === from && s.to === to).reduce((sum, s) => sum + s.amount, 0);
+  }
+
+  function draw(){
+    toggleEl.className = 'settle-toggle ' + (simplify ? 'on' : 'off');
+    labelEl.textContent = simplify ? 'Trust me bro' : 'Trust issues? Show me everything';
+    noteEl.textContent = simplify
+      ? 'Got doubts? No worries, we got ya — fewest payments to settle up.'
+      : 'Zero-trust mode: every direct debt between two people, nothing netted, nothing hidden.';
+
+    const allExpenses = expenses.concat(allSettlements.map(settlementToExpense));
+    const { balances, txns } = simplify ? computeSettlement(members, allExpenses) : computeRawSettlement(members, allExpenses);
+
+    areaEl.innerHTML = '';
+    if(expenses.length===0){
+      areaEl.innerHTML = '<div class="settle-empty">Add expenses to see who owes what.</div>';
+    } else if(txns.length===0){
+      areaEl.innerHTML = `<div class="settle-empty">Everyone's square — no one owes anything.</div>`;
+    } else {
+      txns.forEach(tx => {
+        const already = settledSoFar(tx.from, tx.to);
+        const row = document.createElement('div');
+        row.className = 'settle-txn';
+        row.innerHTML = `
+          <div class="settle-txn-top">
+            <span>${escapeHtml(tx.from)} <span class="arrow">→</span> ${escapeHtml(tx.to)}</span>
+            <div class="settle-txn-actions">
+              <span class="amt">${money(tx.amount)}</span>
+              <button class="settle-btn" type="button">Settle</button>
+            </div>
+          </div>
+          ${already > 0.005 ? `<div>
+            <div class="settle-progress-label">${money(already)} of ${money(already + tx.amount)} settled</div>
+            <div class="settle-progress-bar"><div class="settle-progress-fill" style="width:${Math.min(100, already/(already+tx.amount)*100)}%;"></div></div>
+          </div>` : ''}
+        `;
+        row.querySelector('.settle-btn').onclick = (ev) => {
+          if(row.querySelector('.settle-inline-form')) return;
+          const form = document.createElement('div');
+          form.className = 'settle-inline-form';
+          form.innerHTML = `
+            <input type="number" inputmode="decimal" step="0.01" value="${tx.amount}" min="0.01" max="${tx.amount}">
+            <button class="btn small teal" type="button">Confirm</button>
+            <button class="link-btn" type="button">cancel</button>
+            <div class="settle-inline-err"></div>
+          `;
+          row.appendChild(form);
+          const input = form.querySelector('input');
+          const [confirmBtn, cancelBtn] = form.querySelectorAll('button');
+          const errEl = form.querySelector('.settle-inline-err');
+          input.focus(); input.select();
+          cancelBtn.onclick = () => form.remove();
+          confirmBtn.onclick = async () => {
+            if(confirmBtn.disabled) return;
+            const amt = Math.round(parseFloat(input.value) * 100) / 100;
+            if(!amt || amt <= 0){ errEl.textContent = 'Enter an amount.'; return; }
+            if(amt > tx.amount + 0.005){ errEl.textContent = `Can't settle more than ${money(tx.amount)}.`; return; }
+            confirmBtn.disabled = true;
+            const updated = writableSettlements.concat({ id: uid(), from: tx.from, to: tx.to, amount: amt, date: new Date().toISOString().slice(0,10) });
+            await onSettlementsChange(updated);
+          };
+        };
+        areaEl.appendChild(row);
+      });
+    }
+
+    const miniWrap = document.createElement('div');
+    miniWrap.className = 'balances-mini';
+    Object.entries(balances).forEach(([n,v]) => {
+      const s = document.createElement('span');
+      s.className = 'bal-chip ' + (v>0.005?'pos':v<-0.005?'neg':'zero');
+      s.style.borderLeftColor = colorForName(n);
+      s.textContent = `${n} ${v>0.005?'+':''}${money(v)}`;
+      miniWrap.appendChild(s);
+    });
+    areaEl.appendChild(miniWrap);
+
+    if(historyEl){
+      if(allSettlements.length === 0){
+        historyEl.innerHTML = '';
+      } else {
+        const sorted = allSettlements.slice().sort((a,b) => (b.date||'').localeCompare(a.date||''));
+        const writableIds = new Set(writableSettlements.map(s => s.id));
+        historyEl.innerHTML = `<div class="settle-history-title">Payment history</div>` + sorted.map(s => `
+          <div class="settle-history-item">
+            <span>${escapeHtml(s.from)} → ${escapeHtml(s.to)} <span class="shi-amt">${money(s.amount)}</span>${s.sourceLabel ? ` · <span class="shi-src">${escapeHtml(s.sourceLabel)}</span>` : ''}</span>
+            ${writableIds.has(s.id) ? `<button class="shi-undo" type="button" data-id="${s.id}">undo</button>` : ''}
+          </div>`).join('');
+        historyEl.querySelectorAll('.shi-undo').forEach(btn => {
+          btn.onclick = async () => {
+            if(btn.disabled) return;
+            btn.disabled = true;
+            const updated = writableSettlements.filter(s => s.id !== btn.dataset.id);
+            await onSettlementsChange(updated);
+          };
+        });
+      }
+    }
+  }
+
+  draw();
+  toggleEl.onclick = () => {
+    simplify = !simplify;
+    localStorage.setItem('sc:simplify', simplify ? 'on' : 'off');
+    draw();
+  };
+}
+
 // ---------- render root ----------
 function render(html){ document.getElementById('app').innerHTML = html; }
 
@@ -647,12 +808,13 @@ function renderLanding(err, prefillCode){
 async function joinCrew(rawCode, name){
   let group = await getJSON(groupKey(rawCode), true);
   if(!group){
-    group = { code: rawCode, members: [name], trips: [] };
+    group = { code: rawCode, members: [name], trips: [], settlements: [] };
     await setJSON(groupKey(rawCode), group, true);
   } else if(!group.members.includes(name)){
     group.members.push(name);
     await setJSON(groupKey(rawCode), group, true);
   }
+  group.settlements = group.settlements || []; // older crews predate this field
   state.code = group.code;
   state.name = name;
   state.group = group;
@@ -688,6 +850,17 @@ function renderDashboard(){
       <button class="link-btn" id="btn-switch">switch crew</button>
     </div>
     <div class="members-row" id="member-chips"></div>
+    ${trips.length ? `
+    <div class="section-label">Overall balance (all outings)</div>
+    <div class="card" style="margin-bottom:20px;">
+      <div class="settle-head">
+        <div class="settle-title">Who owes what</div>
+        <div class="settle-toggle" id="overall-simplify-toggle"><span class="switch"></span><span id="overall-simplify-label">Simplify debts</span></div>
+      </div>
+      <div class="settle-note" id="overall-settle-note"></div>
+      <div id="overall-settle-area"><div class="loading">Crunching all your outings…</div></div>
+      <div id="overall-settle-history"></div>
+    </div>` : ''}
     <div class="section-label">Outings</div>
     <div class="trip-grid" id="trip-grid"></div>
   `);
@@ -743,6 +916,45 @@ function renderDashboard(){
     state.code = null; state.group = null;
     renderLanding();
   };
+
+  if(trips.length) loadOverallSettlement(g);
+}
+
+// Pulls every outing's full expense list (the dashboard only holds each
+// outing's lightweight summary) and runs them all through the same
+// settlement engine as a single outing, so people/balances net out across
+// the whole crew's history instead of one outing at a time.
+async function loadOverallSettlement(g){
+  const fullTrips = (await Promise.all(g.trips.map(t => getJSON(tripKey(state.code, t.id), true)))).filter(Boolean);
+  const area = document.getElementById('overall-settle-area');
+  const note = document.getElementById('overall-settle-note');
+  const toggle = document.getElementById('overall-simplify-toggle');
+  const label = document.getElementById('overall-simplify-label');
+  const history = document.getElementById('overall-settle-history');
+  if(!area || !toggle) return; // user navigated away before this resolved
+
+  const allExpenses = fullTrips.flatMap(t => t.expenses);
+
+  // Settling on the dashboard always records a crew-level payment (g.settlements),
+  // since there's no single outing to attach it to. Settlements made *inside* an
+  // outing still count here too — they're read-only in this view (undo them on
+  // the outing itself) but still reduce the overall numbers, same as they should.
+  function setup(){
+    g.settlements = g.settlements || [];
+    const tripSettlements = fullTrips.flatMap(t => (t.settlements||[]).map(s => ({ ...s, sourceLabel: `in ${t.name}` })));
+    renderSettlementUI({
+      areaEl: area, noteEl: note, toggleEl: toggle, labelEl: label, historyEl: history,
+      members: g.members, expenses: allExpenses,
+      allSettlements: tripSettlements.concat(g.settlements),
+      writableSettlements: g.settlements,
+      onSettlementsChange: async (updated) => {
+        g.settlements = updated;
+        await setJSON(groupKey(state.code), g, true);
+        setup();
+      }
+    });
+  }
+  setup();
 }
 
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
@@ -870,7 +1082,7 @@ function renderNewTrip(){
     }
     btn.disabled = true;
     const id = uid();
-    const trip = { id, name, date, members: [...selected], expenses: [] };
+    const trip = { id, name, date, members: [...selected], expenses: [], settlements: [] };
     await setJSON(tripKey(state.code, id), trip, true);
     g.trips.push({ id, name, date, memberCount: selected.size, total: 0 });
     await setJSON(groupKey(state.code), g, true);
@@ -887,6 +1099,7 @@ async function openTrip(tripId){
     renderDashboard();
     return;
   }
+  trip.settlements = trip.settlements || []; // older outings predate this field
   state.tripId = tripId;
   state.trip = trip;
   renderTripDetail();
@@ -954,6 +1167,7 @@ function renderTripDetail(){
       </div>
       <div class="settle-note" id="settle-note"></div>
       <div id="settle-area"></div>
+      <div id="settle-history"></div>
       <div class="report-row"><button class="btn small ghost" id="btn-download-report">🧾 Get the receipts (PDF)</button></div>
     </div>
   `);
@@ -1134,55 +1348,33 @@ function renderTripDetail(){
   };
 
   // settle up
-  const settleArea = document.getElementById('settle-area');
-  const settleNote = document.getElementById('settle-note');
-  const toggle = document.getElementById('simplify-toggle');
-  const toggleLabel = document.getElementById('simplify-label');
-  let simplify = localStorage.getItem('sc:simplify') !== 'off';
-
-  function drawSettle(){
-    toggle.className = 'settle-toggle ' + (simplify ? 'on' : 'off');
-    toggleLabel.textContent = simplify ? 'Trust me bro' : 'Trust issues? Show me everything';
-    settleNote.textContent = simplify
-      ? 'Got doubts? No worries, we got ya — fewest payments to settle up.'
-      : 'Zero-trust mode: every direct debt between two people, nothing netted, nothing hidden.';
-
-    const { balances, txns } = simplify ? computeSettlement(t.members, t.expenses) : computeRawSettlement(t.members, t.expenses);
-    if(t.expenses.length===0){
-      settleArea.innerHTML = '<div class="settle-empty">Add expenses to see who owes what.</div>';
-    } else if(txns.length===0){
-      settleArea.innerHTML = `<div class="settle-empty">Everyone's square — no one owes anything.</div>`;
-    } else {
-      settleArea.innerHTML = txns.map(tx => `
-        <div class="settle-txn">
-          <span>${escapeHtml(tx.from)} <span class="arrow">→</span> ${escapeHtml(tx.to)}</span>
-          <span class="amt">${money(tx.amount)}</span>
-        </div>`).join('');
-    }
-    const miniWrap = document.createElement('div');
-    miniWrap.className = 'balances-mini';
-    Object.entries(balances).forEach(([n,v]) => {
-      const s = document.createElement('span');
-      s.className = 'bal-chip ' + (v>0.005?'pos':v<-0.005?'neg':'zero');
-      s.style.borderLeftColor = colorForName(n);
-      s.textContent = `${n} ${v>0.005?'+':''}${money(v)}`;
-      miniWrap.appendChild(s);
+  function setupSettle(){
+    renderSettlementUI({
+      areaEl: document.getElementById('settle-area'),
+      noteEl: document.getElementById('settle-note'),
+      toggleEl: document.getElementById('simplify-toggle'),
+      labelEl: document.getElementById('simplify-label'),
+      historyEl: document.getElementById('settle-history'),
+      members: t.members, expenses: t.expenses,
+      allSettlements: t.settlements,
+      writableSettlements: t.settlements,
+      onSettlementsChange: async (updated) => {
+        t.settlements = updated;
+        await saveTrip();
+        setupSettle();
+      }
     });
-    settleArea.appendChild(miniWrap);
   }
-  drawSettle();
-  toggle.onclick = () => {
-    simplify = !simplify;
-    localStorage.setItem('sc:simplify', simplify ? 'on' : 'off');
-    drawSettle();
-  };
+  setupSettle();
 
-  document.getElementById('btn-download-report').onclick = () => downloadTripReport(t, simplify);
+  document.getElementById('btn-download-report').onclick = () => downloadTripReport(t, localStorage.getItem('sc:simplify') !== 'off');
 }
 
 function buildReportHTML(t, simplify){
+  const settlements = t.settlements || [];
   const total = t.expenses.reduce((s,e)=>s+e.amount,0);
-  const { balances, txns } = simplify ? computeSettlement(t.members, t.expenses) : computeRawSettlement(t.members, t.expenses);
+  const allExpenses = t.expenses.concat(settlements.map(settlementToExpense));
+  const { balances, txns } = simplify ? computeSettlement(t.members, allExpenses) : computeRawSettlement(t.members, allExpenses);
 
   const expenseRows = t.expenses.length ? t.expenses.map(e => `
     <div class="r-exp">
@@ -1199,6 +1391,9 @@ function buildReportHTML(t, simplify){
   const txnRows = txns.length ? txns.map(tx => `
     <div class="r-txn"><span>${escapeHtml(tx.from)} → ${escapeHtml(tx.to)}</span><span class="r-txn-amt">${money(tx.amount)}</span></div>`).join('')
     : '<div class="r-empty">Everyone\'s square — no one owes anything.</div>';
+
+  const settlementRows = settlements.length ? settlements.slice().sort((a,b) => (b.date||'').localeCompare(a.date||'')).map(s => `
+    <div class="r-txn"><span>${escapeHtml(s.from)} → ${escapeHtml(s.to)}${s.date ? ' · '+escapeHtml(s.date) : ''}</span><span class="r-txn-amt">${money(s.amount)}</span></div>`).join('') : '';
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>${escapeHtml(t.name)} — SplitCrew report</title>
@@ -1273,6 +1468,11 @@ body{
     <h2 class="r-title">Settle up</h2>
     ${txnRows}
   </div>
+
+  ${settlementRows ? `<div class="card">
+    <h2 class="r-title">Payments already made</h2>
+    ${settlementRows}
+  </div>` : ''}
 
   <div class="footer-note">Generated by SplitCrew — splitcrew.in</div>
 </div>
