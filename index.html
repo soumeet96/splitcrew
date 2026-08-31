@@ -505,6 +505,29 @@ function toggleShareBox(anchorBtn, url){
   };
 }
 
+// inline "remove member from crew" confirm — doesn't touch existing outings,
+// which each keep their own copy of who was in them
+function showRemoveMemberConfirm(anchorChip, name){
+  const existing = document.getElementById('remove-member-box');
+  if(existing) existing.remove();
+  const box = document.createElement('div');
+  box.id = 'remove-member-box';
+  box.className = 'share-box';
+  box.innerHTML = `
+    <div>Remove <b>${escapeHtml(name)}</b> from this crew?</div>
+    <button class="btn small" type="button" id="rm-confirm" style="background:var(--red);">Yes, remove</button>
+    <button class="link-btn" type="button" id="rm-cancel">cancel</button>
+  `;
+  anchorChip.insertAdjacentElement('afterend', box);
+  document.getElementById('rm-cancel').onclick = () => box.remove();
+  document.getElementById('rm-confirm').onclick = async () => {
+    const g = state.group;
+    g.members = g.members.filter(m => m !== name);
+    await setJSON(groupKey(state.code), g, true);
+    renderDashboard();
+  };
+}
+
 // ---------- settlement engine ----------
 function computeSettlement(members, expenses){
   const bal = {};
@@ -673,6 +696,17 @@ function renderDashboard(){
     const c = document.createElement('span');
     c.className = 'chip' + (m===state.name ? ' on':'');
     c.innerHTML = avatarChipHTML(m);
+    if(m !== state.name){
+      const rm = document.createElement('span');
+      rm.textContent = ' ×';
+      rm.style.cursor = 'pointer';
+      rm.style.fontWeight = '700';
+      rm.onclick = (ev) => {
+        ev.stopPropagation();
+        showRemoveMemberConfirm(c, m);
+      };
+      c.appendChild(rm);
+    }
     chips.appendChild(c);
   });
   addPersonChip(chips, async (val) => {
