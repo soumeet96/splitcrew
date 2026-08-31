@@ -419,6 +419,33 @@ async function setJSON(key, value, shared){
     return false;
   }
 }
+async function deleteJSON(key, shared){
+  if(!shared){
+    try{ localStorage.removeItem('sc:' + key); return true; }catch(e){ return false; }
+  }
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/kv_delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({ p_key: key })
+    });
+    if(!res.ok){
+      const errText = await res.text().catch(() => '');
+      console.error('kv_delete failed:', res.status, errText);
+      showErrorToast(`Delete failed (${res.status}). Open the browser console for details.`);
+      return false;
+    }
+    return true;
+  }catch(e){
+    console.error('kv_delete failed', e);
+    showErrorToast('Network error deleting — check your connection.');
+    return false;
+  }
+}
 
 // Used only to build a safe storage key — never shown to the user.
 // Storage keys can't contain whitespace, slashes, or quotes, so those get
@@ -841,8 +868,26 @@ function renderTripDetail(){
     <div class="back-row"><button class="link-btn" id="btn-back">← back to crew</button></div>
     <div class="card">
       <div class="trip-header">
-        <h2>${escapeHtml(t.name)}</h2>
-        <div class="tmeta">${t.date || ''} · ${money(total)} total · <button class="link-btn" id="btn-share-trip" style="font-size:12px;">share this outing</button></div>
+        <div id="trip-header-view">
+          <h2>${escapeHtml(t.name)}</h2>
+          <div class="tmeta">${t.date || ''} · ${money(total)} total ·
+            <button class="link-btn" id="btn-share-trip" style="font-size:12px;">share this outing</button> ·
+            <button class="link-btn" id="btn-edit-trip" style="font-size:12px;">edit outing</button> ·
+            <button class="link-btn" id="btn-delete-trip" style="font-size:12px;color:var(--red);">delete outing</button>
+          </div>
+        </div>
+        <div id="trip-edit-form" class="card" style="display:none;margin-top:10px;">
+          <div class="field"><label for="et-name">What are you doing</label><input id="et-name"></div>
+          <div class="field"><label for="et-date">Date</label><input id="et-date" type="date"></div>
+          <button class="btn small teal" id="btn-save-trip-edit">Save</button>
+          <button class="link-btn" id="btn-cancel-trip-edit">cancel</button>
+          <div class="error" id="et-err"></div>
+        </div>
+        <div id="trip-delete-confirm" style="display:none;margin-top:10px;">
+          Delete this outing? This can't be undone.
+          <button class="btn small" id="btn-confirm-delete" style="background:var(--red);">Yes, delete</button>
+          <button class="link-btn" id="btn-cancel-delete">cancel</button>
+        </div>
       </div>
       <div class="section-label" style="margin-top:0;">Who's in</div>
       <div class="members-row" id="who-chips"></div>
@@ -881,6 +926,59 @@ function renderTripDetail(){
 
   document.getElementById('btn-back').onclick = renderDashboard;
   document.getElementById('btn-share-trip').onclick = (ev) => toggleShareBox(ev.currentTarget.closest('.tmeta'), shareLink(g.code, t.id));
+
+  // edit outing (name + date)
+  const headerView = document.getElementById('trip-header-view');
+  const editForm = document.getElementById('trip-edit-form');
+  const deleteConfirm = document.getElementById('trip-delete-confirm');
+  document.getElementById('btn-edit-trip').onclick = () => {
+    document.getElementById('et-name').value = t.name;
+    document.getElementById('et-date').value = t.date || '';
+    document.getElementById('et-err').textContent = '';
+    headerView.style.display = 'none';
+    deleteConfirm.style.display = 'none';
+    editForm.style.display = 'block';
+  };
+  document.getElementById('btn-cancel-trip-edit').onclick = () => {
+    editForm.style.display = 'none';
+    headerView.style.display = 'block';
+  };
+  document.getElementById('btn-save-trip-edit').onclick = async (ev) => {
+    const btn = ev.currentTarget;
+    if(btn.disabled) return;
+    const name = document.getElementById('et-name').value.trim();
+    const date = document.getElementById('et-date').value;
+    if(!name){
+      document.getElementById('et-err').textContent = 'Give the outing a name.';
+      return;
+    }
+    btn.disabled = true;
+    t.name = name;
+    t.date = date;
+    await saveTrip();
+    btn.disabled = false;
+    renderTripDetail();
+  };
+
+  // delete outing
+  document.getElementById('btn-delete-trip').onclick = () => {
+    headerView.style.display = 'none';
+    editForm.style.display = 'none';
+    deleteConfirm.style.display = 'block';
+  };
+  document.getElementById('btn-cancel-delete').onclick = () => {
+    deleteConfirm.style.display = 'none';
+    headerView.style.display = 'block';
+  };
+  document.getElementById('btn-confirm-delete').onclick = async (ev) => {
+    const btn = ev.currentTarget;
+    if(btn.disabled) return;
+    btn.disabled = true;
+    g.trips = g.trips.filter(x => x.id !== t.id);
+    await setJSON(groupKey(state.code), g, true);
+    await deleteJSON(tripKey(state.code, t.id), true);
+    renderDashboard();
+  };
 
   // who chips (trip membership toggle)
   const whoWrap = document.getElementById('who-chips');
